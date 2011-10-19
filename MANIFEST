@@ -9,10 +9,11 @@ README
 dist.ini
 lib/Config/Role.pm
 perlcritic.rc
+t/.my_class.ini
+t/.my_other_class.ini
 t/01_synopsis.t
+t/02_no_config_filename.t
 t/author-critic.t
-t/my_class.ini
-t/my_other_class.ini
 t/release-eol.t
 t/release-kwalitee.t
 t/release-no-tabs.t

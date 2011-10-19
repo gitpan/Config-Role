@@ -37,7 +37,6 @@
          "requires" : {
             "English" : 0,
             "Moose" : 0,
-            "Test::Exception" : 0,
             "Test::More" : 0,
             "rlib" : 0
          }
@@ -51,6 +50,6 @@
          "web" : "http://github.com/robinsmidsrod/Config-Role"
       }
    },
-   "version" : "0.0.1"
+   "version" : "0.1.0"
 }
 

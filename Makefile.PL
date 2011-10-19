@@ -14,7 +14,6 @@ my %WriteMakefileArgs = (
   "BUILD_REQUIRES" => {
     "English" => 0,
     "Moose" => 0,
-    "Test::Exception" => 0,
     "Test::More" => 0,
     "rlib" => 0
   },
@@ -37,7 +36,7 @@ my %WriteMakefileArgs = (
     "strict" => 0,
     "warnings" => 0
   },
-  "VERSION" => "0.0.1",
+  "VERSION" => "0.1.0",
   "test" => {
     "TESTS" => "t/*.t"
   }

@@ -3,7 +3,7 @@ use warnings;
 
 package Config::Role;
 {
-  $Config::Role::VERSION = '0.0.1';
+  $Config::Role::VERSION = '0.1.0';
 }
 use Moose::Role;
 use namespace::autoclean;
@@ -16,7 +16,13 @@ use Path::Class::File;
 use Config::Any;
 use MooseX::Types::Moose qw(ArrayRef HashRef Str Object);
 
-use MooseX::Types -declare => [qw( File ArrayRefOfFile )];
+use MooseX::Types -declare => [qw( Dir File ArrayRefOfFile )];
+subtype Dir,
+    as Object,
+    where { $_->isa('Path::Class::Dir') };
+coerce Dir,
+    from Str,
+    via { Path::Class::Dir->new($_) };
 subtype File,
     as Object,
     where { $_->isa('Path::Class::File') };
@@ -30,7 +36,18 @@ coerce ArrayRefOfFile,
     via { [ map { to_File($_) } @$_ ] };
 
 
-requires 'config_filename';
+
+has 'config_dir' => (
+    is         => 'ro',
+    isa        => Dir,
+    coerce     => 1,
+    lazy_build => 1,
+);
+
+sub _build_config_dir {
+    my ($self) = @_;
+    return Path::Class::Dir->new(File::HomeDir->my_data);
+}
 
 
 has 'config_file' => (
@@ -42,11 +59,19 @@ has 'config_file' => (
 
 sub _build_config_file {
     my ($self) = @_;
-    my $home = File::HomeDir->my_data;
-    my $conf_file = Path::Class::Dir->new($home)->file(
-        $self->config_filename
+    my $config_filename = "";
+    if ( $self->can('config_filename') ) {
+        $config_filename = $self->config_filename;
+    }
+    else {
+        # Method taken from Catalyst::Utils->appprefix()
+        $config_filename = lc( $self->meta->name );
+        $config_filename =~ s/::/_/g;
+        $config_filename = ".${config_filename}.ini";
+    }
+    return $self->config_dir->file(
+        $config_filename
     );
-    return $conf_file;
 }
 
 
@@ -95,17 +120,18 @@ Config::Role - Moose config attribute loaded from file in home dir
 
 =head1 VERSION
 
-version 0.0.1
+version 0.1.0
 
 =head1 SYNOPSIS
 
     package My::Class;
     use Moose;
+    with 'Config::Role';
 
     # Read configuration from ~/.my_class.ini, available in $self->config
+    # This is optional if you like this particular naming of the file
     has 'config_filename' => ( is => 'ro', isa => 'Str', lazy_build => 1 );
     sub _build_config_filename { '.my_class.ini' }
-    with 'Config::Role';
 
     # Fetch a value from the configuration, allow constructor override
     has 'username' => ( is => 'ro', isa => 'Str', lazy_build => 1 );
@@ -119,6 +145,13 @@ version 0.0.1
         );
         ...
     }
+
+=head1 RATIONALE
+
+This is the problem Config::Role was created to solve: Give me a config
+attribute (hashref) which is read from a file in my home directory to give
+other attributes default values, with configurability to choose the file's
+location and name.
 
 =head1 DESCRIPTION
 
@@ -145,10 +178,19 @@ specifying the common filename extension for the format.
 
 =head1 ATTRIBUTES
 
+=head2 config_dir
+
+The directory where the configuration file is located. A Path::Class::Dir
+object.  Defaults to C<< File::HomeDir->my_data >>.  Allows coercion from
+Str.
+
 =head2 config_file
 
 The filename the configuration is read from. A Path::Class::File object.
-Allows coercion from Str.
+Allows coercion from Str.  Default is calculated based on the composing
+class name.  If your composing class is called C<My::Class> it will be
+C<.my_class.ini>.  Remember that if you sub-class the composing class, the
+default will be the name of the sub-class, not the super-class.
 
 =head2 config_files
 
@@ -165,8 +207,40 @@ specified files.
 
 =head2 config_filename
 
-Required method on the composing class. Should return a string with the name
-of the configuration file name.
+Optional attribute or method on the composing class. Should return a string
+with the name of the configuration file name.  See C<config_file> for
+how the default is calculated if this method is not available.
+
+=head1 COMPARISON TO L<MooseX::ConfigFromFile>
+
+Config::Role doesn't require you to use anything else than C<< $class->new() >> to
+actually get the benefit of automatic config loading.  Someone might see this as
+negative, as it gives a minor performance penalty even if the config file is
+not present.
+
+Config::Role uses L<File::HomeDir> to default to a known location, so you
+only need to specify the file name you use, not a full path.  This should
+give better cross-platform compatibility, together with the use of
+Path::Class for all file system manipulation.
+
+Also, with Config::Role you must explicitly specify in the builder of an
+attribute that you want to use values from the config file.
+MooseX::ConfigFromFile seems to do that for you.  You also get the benefit
+that the configuration file keys and the class attribute names does not need
+to map 1-to-1 (someone will probably see that as a bad thing).
+
+Otherwise they are pretty similar in terms of what they do.
+
+=head1 TODO
+
+=over 4
+
+=item *
+
+A nicely named sugar function could be exported to allow less boilerplate
+in generating attributes that default to config values.
+
+=back
 
 =head1 SEMANTIC VERSIONING
 
@@ -191,6 +265,10 @@ L<Config::Any>
 =item *
 
 L<Path::Class::File>
+
+=item *
+
+L<MooseX::ConfigFromFile>
 
 =back
 
