@@ -3,7 +3,7 @@ use warnings;
 
 package Config::Role;
 {
-  $Config::Role::VERSION = '0.1.0';
+  $Config::Role::VERSION = '0.1.1';
 }
 use Moose::Role;
 use namespace::autoclean;
@@ -120,7 +120,7 @@ Config::Role - Moose config attribute loaded from file in home dir
 
 =head1 VERSION
 
-version 0.1.0
+version 0.1.1
 
 =head1 SYNOPSIS
 
@@ -385,7 +385,7 @@ Robin Smidsrød <robin@smidsrod.no>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2011 by Robin Smidsrød.
+This software is copyright (c) 2012 by Robin Smidsrød.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.

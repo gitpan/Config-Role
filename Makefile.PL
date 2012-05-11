@@ -12,7 +12,9 @@ my %WriteMakefileArgs = (
   "ABSTRACT" => "Moose config attribute loaded from file in home dir",
   "AUTHOR" => "Robin Smidsr\303\270d <robin\@smidsrod.no>",
   "BUILD_REQUIRES" => {
+    "Config::Tiny" => 0,
     "English" => 0,
+    "File::Spec" => 0,
     "Moose" => 0,
     "Test::More" => 0,
     "rlib" => 0
@@ -36,7 +38,7 @@ my %WriteMakefileArgs = (
     "strict" => 0,
     "warnings" => 0
   },
-  "VERSION" => "0.1.0",
+  "VERSION" => "0.1.1",
   "test" => {
     "TESTS" => "t/*.t"
   }
